@@ -1,6 +1,6 @@
 # Image and Video
-
-
+![image](https://github.com/user-attachments/assets/722a4ca1-d29f-4317-a4ac-f7615171ac67)
+![image](https://github.com/user-attachments/assets/78edfea9-c019-443d-944c-0ea58b7c522c)
 
 # POC Reverse Shell With Flutter Application
 
@@ -26,7 +26,7 @@ clone repo
 - git clone https://github.com/NormanSamsudin/poc-flutter-reverse-shell.git
  
 configure reverse shell
-- change ip address and port of "ngrok" on file main.dart
+- change ip address and port of "ngrok" on file main.dart [ip address: 3.22.53.161, port: 12875] 
 
 
 
