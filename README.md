@@ -26,7 +26,7 @@ clone repo
 - git clone https://github.com/NormanSamsudin/poc-flutter-reverse-shell.git
  
 configure reverse shell
-- change ip address and port on file main.dart
+- change ip address and port of "ngrok" on file main.dart
 
 
 
