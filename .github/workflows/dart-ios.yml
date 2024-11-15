@@ -13,39 +13,39 @@ permissions:
 
 jobs:  
   build:      
-    name: Build & Release iOS
+    name: Build & Release 
     runs-on: macos-latest 
 
     steps:
-      # Step 1: Checkout Repository
+      # 1. Checkout Repository
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-      # Step 2: Setup Java
+      # 2. Set Up Java
       - name: Set Up Java
         uses: actions/setup-java@v3.12.0
         with:
           distribution: 'oracle'
           java-version: '17'
 
-      # Step 3: Setup Flutter
+      # 3. Set Up Flutter
       - name: Set Up Flutter
         uses: subosito/flutter-action@v2
         with:
           flutter-version: '3.24.5'
           channel: 'stable'
 
-      # Step 4: Install Dependencies
+      # 4. Install Dependencies
       - name: Install Dependencies
         run: flutter pub get
         working-directory: mobile_application
 
-      # Step 5: Build IPA (iOS)
+      # 5. Build IPA (iOS Build)
       - name: Build IPA
-        run: flutter build ipa --release --no-codesign
+        run: flutter build ipa --no-codesign
         working-directory: mobile_application
 
-      # Step 6: Extract Version and Set Environment Variable
+      # 6. Extract Version and Set Dynamic Tag
       - name: Extract version and Set Environment Variable
         id: version
         run: |
@@ -54,14 +54,14 @@ jobs:
             version="${version}-build-${{ github.run_number }}"
           fi
           echo "VERSION=$version" >> $GITHUB_ENV
-          echo "version=$version"  # For debugging purposes
+          echo "Tag: v$version"
 
-      # Step 7: Create GitHub Release
+      # 7. Create GitHub Release
       - name: Create GitHub Release
         uses: ncipollo/release-action@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           artifacts: mobile_application/build/ios/ipa/*.ipa
-          tag: ${{ env.VERSION }}
+          tag: v${{ env.VERSION }}
           generateReleaseNotes: false
           makeLatest: legacy
