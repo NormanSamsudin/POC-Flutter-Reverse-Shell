@@ -1,0 +1,67 @@
+name: "iOS Build and Release"
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:  
+  build:      
+    name: Build & Release iOS
+    runs-on: macos-latest 
+
+    steps:
+      # Step 1: Checkout Repository
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      # Step 2: Setup Java
+      - name: Set Up Java
+        uses: actions/setup-java@v3.12.0
+        with:
+          distribution: 'oracle'
+          java-version: '17'
+
+      # Step 3: Setup Flutter
+      - name: Set Up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.5'
+          channel: 'stable'
+
+      # Step 4: Install Dependencies
+      - name: Install Dependencies
+        run: flutter pub get
+        working-directory: mobile_application
+
+      # Step 5: Build IPA (iOS)
+      - name: Build IPA
+        run: flutter build ipa --release --no-codesign
+        working-directory: mobile_application
+
+      # Step 6: Extract Version and Set Environment Variable
+      - name: Extract version and Set Environment Variable
+        id: version
+        run: |
+          version=$(grep '^version: ' mobile_application/pubspec.yaml | cut -d ' ' -f 2 | tr -d '\r')
+          if git rev-parse "v$version" >/dev/null 2>&1; then
+            version="${version}-build-${{ github.run_number }}"
+          fi
+          echo "VERSION=$version" >> $GITHUB_ENV
+          echo "version=$version"  # For debugging purposes
+
+      # Step 7: Create GitHub Release
+      - name: Create GitHub Release
+        uses: ncipollo/release-action@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          artifacts: mobile_application/build/ios/ipa/*.ipa
+          tag: ${{ env.VERSION }}
+          generateReleaseNotes: false
+          makeLatest: legacy
