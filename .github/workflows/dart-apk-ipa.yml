@@ -1,0 +1,72 @@
+name: "Build"
+
+on:
+  pull_request:
+    branches:
+      - dev
+      - test
+  push:
+    branches:
+      - dev
+      - test
+
+jobs:  
+  build:      
+    name: Build & Release 
+    runs-on: macos-latest 
+
+    steps:
+        #1 Checkout Repository
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+        #2 Setup Java
+      - name: Set Up Java
+        uses: actions/setup-java@v3.12.0
+        with:
+          distribution: 'oracle'
+          java-version: '17'
+
+        #3 Setup Flutter
+      - name: Set Up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.22.2'
+          channel: 'stable'
+
+        #4 Install Dependencies
+      - name: Install Dependencies
+        run: flutter pub get
+        working-directory: mobile_application
+
+        #5 Build APK
+      - name: Build APK
+        run: flutter build apk --release
+        working-directory: mobile_application
+
+        #6 Build App Bundle (aab)
+      - name: Build appBundle
+        run: flutter build appbundle
+        working-directory: mobile_application
+
+        #7 Build IPA (iOS Build)
+      - name: Build IPA
+        run: flutter build ipa --no-codesign
+        working-directory: mobile_application
+
+        #8 Extract Version and Create Release
+      - name: Extract version and Create Release
+        id: release
+        run: |
+          version=$(grep '^version: ' mobile_application/pubspec.yaml | cut -d ' ' -f 2 | tr -d '\r')
+          if git rev-parse "v$version" >/dev/null 2>&1; then
+            version="${version}-build-${{ github.run_number }}"
+          fi
+          echo "VERSION=$version" >> $GITHUB_ENV
+
+      - name: Create GitHub Release
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: "mobile_application/build/app/outputs/flutter-apk/app-release.apk,mobile_application/build/app/outputs/bundle/release/app-release.aab,mobile_application/build/ios_build.tar.gz"
+          tag: v${{ env.VERSION }}
+          token: ${{ secrets.TOKEN }}
